@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #4A6EFF;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tabs div {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #4A6EFF;
+        }
+        .tabs .active {
+            border-bottom: 2px solid #4A6EFF;
+            font-weight: bold;
+        }
+        .form-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .icon-lock {
+            margin-left: -30px;
+            cursor: pointer;
+        }
+        .create-btn {
+            padding: 10px 15px;
+            border: none;
+            background-color: #4A6EFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+        .todo-text {
+            font-size: 18px;
+        }
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px dashed #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>TODOS</h1>
+
+    <div class="tabs">
+        <div class="active">Incomplete</div>
+        <div>Complete</div>
+    </div>
+
+    <div class="form-container">
+        <input type="text" placeholder="Name" id="todo-input">
+        <span class="icon-lock">🔒</span>
+        <button class="create-btn">Create Todo</button>
+    </div>
+
+    <ul class="todo-list">
+        <li class="todo-item">
+            <span class="todo-text">Do Task B</span>
+            <div class="todo-actions">
+                <div class="action-btn">✔️</div>
+                <div class="action-btn">🗑️</div>
+            </div>
+        </li>
+        <li class="todo-item">
+            <span class="todo-text">Do Task A</span>
+            <div class="todo-actions">
+                <div class="action-btn">✔️</div>
+                <div class="action-btn">🗑️</div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+</body>
+</html>
