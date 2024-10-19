@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แอป TODO</title>
+    <title>TODO App พร้อมหมวดหมู่</title>
     <style>
-        /* การตั้งค่ารูปแบบพื้นฐานของหน้า */
         body {
             font-family: Arial, sans-serif;
             background-color: #f6f6f6;
@@ -17,7 +16,7 @@
         }
         .container {
             background-color: white;
-            width: 400px;
+            width: 500px;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -27,21 +26,6 @@
             color: #4A6EFF;
             font-size: 36px;
             margin-bottom: 20px;
-        }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-        }
-        .tabs div {
-            padding: 10px 20px;
-            cursor: pointer;
-            color: #4A6EFF;
-        }
-        .tabs .active {
-            border-bottom: 2px solid #4A6EFF;
-            font-weight: bold;
         }
         .form-container {
             display: flex;
@@ -55,11 +39,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
-        .icon-lock {
-            margin-left: -30px;
-            cursor: pointer;
-        }
-        .create-btn {
+        .create-btn, .add-category-btn {
             padding: 10px 15px;
             border: none;
             background-color: #4A6EFF;
@@ -84,7 +64,7 @@
         .todo-text {
             font-size: 18px;
         }
-        .todo-actions {
+        .todo-actions, .category-actions {
             display: flex;
             gap: 10px;
         }
@@ -98,105 +78,128 @@
             align-items: center;
             cursor: pointer;
         }
+        .category-list {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .category-item {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>TODOs</h1>
+    <h1>Categorized To-Dos</h1>
 
-    <!-- ส่วนแท็บสลับระหว่าง incomplete และ complete -->
-    <div class="tabs">
-        <div id="tab-incomplete" class="active">Incomplete</div>
-        <div id="tab-complete">Complete</div>
-    </div>
-
-    <!-- ฟอร์มสำหรับสร้างงานใหม่ -->
+    <!-- แสดงหมวดหมู่ทั้งหมด -->
+    <h3>Categories</h3>
     <div class="form-container">
-        <input type="text" placeholder="Name" id="todo-input">
-        <span class="icon-lock">🔒</span>
-        <button class="create-btn" id="create-todo">Create Todo</button>
+        <input type="text" placeholder="เพิ่มหมวดหมู่ใหม่ / Add New Category" id="category-input">
+        <button class="add-category-btn" id="create-category">เพิ่มหมวดหมู่ / Add Category</button>
     </div>
 
-    <!-- รายการงานที่ยังไม่เสร็จ -->
-    <ul class="todo-list" id="todo-list-incomplete">
-        <!-- งานที่ incomplete จะปรากฏตรงนี้ -->
+    <ul class="category-list" id="category-list">
+        <!-- รายการหมวดหมู่จะแสดงที่นี่ -->
     </ul>
 
-    <!-- รายการงานที่ทำเสร็จแล้ว (ตอนแรกจะถูกซ่อน) -->
-    <ul class="todo-list" id="todo-list-complete" style="display: none;">
-        <!-- งานที่ complete จะปรากฏตรงนี้ -->
+    <!-- แสดงงานในหมวดหมู่ที่เลือก -->
+    <h3>Tasks in Category: <span id="current-category">ทั้งหมด / All</span></h3>
+    <div class="form-container">
+        <input type="text" placeholder="เพิ่มงานใหม่ / Add New Task" id="todo-input">
+        <button class="create-btn" id="create-todo">เพิ่มงาน / Add Task</button>
+    </div>
+
+    <ul class="todo-list" id="todo-list">
+        <!-- รายการงานจะปรากฏที่นี่ -->
     </ul>
 </div>
 
 <script>
-    // ส่วนที่เก็บปุ่มและช่อง input เพื่อใช้ในฟังก์ชัน
-    const createButton = document.getElementById('create-todo');
+    let categories = [];
+    let todos = [];
+    let currentCategory = 'ทั้งหมด / All';
+
+    const categoryInput = document.getElementById('category-input');
     const todoInput = document.getElementById('todo-input');
-    const todoListIncomplete = document.getElementById('todo-list-incomplete');
-    const todoListComplete = document.getElementById('todo-list-complete');
-
-    const tabIncomplete = document.getElementById('tab-incomplete');
-    const tabComplete = document.getElementById('tab-complete');
-
-    // เพิ่มฟังก์ชันที่ทำงานเมื่อกดปุ่ม "Create Todo"
-    createButton.addEventListener('click', () => {
-        const taskName = todoInput.value.trim();  // ดึงค่าจาก input
-        if (taskName !== '') {
-            addTask(taskName);  // เรียกใช้ฟังก์ชันเพิ่มงาน
-            todoInput.value = '';  // ล้างช่อง input หลังสร้างงาน
+    const categoryList = document.getElementById('category-list');
+    const todoList = document.getElementById('todo-list');
+    const currentCategoryDisplay = document.getElementById('current-category');
+    
+    document.getElementById('create-category').addEventListener('click', () => {
+        const categoryName = categoryInput.value.trim();
+        if (categoryName) {
+            categories.push(categoryName);
+            renderCategories();
+            categoryInput.value = '';
         }
     });
 
-    // ฟังก์ชันเพิ่มงานใหม่ในรายการ
-    function addTask(taskName) {
-        const li = document.createElement('li');  // สร้าง <li>
-        li.classList.add('todo-item');
-        li.innerHTML = `
-            <span class="todo-text">${taskName}</span>
-            <div class="todo-actions">
-                <div class="action-btn complete-btn">✔️</div>
-                <div class="action-btn delete-btn">🗑️</div>
-            </div>
-        `;
-
-        // เพิ่มฟังก์ชันให้ปุ่ม ✔️ เพื่อย้ายงานไปยัง complete
-        const completeBtn = li.querySelector('.complete-btn');
-        completeBtn.addEventListener('click', () => {
-            moveToComplete(li);
-        });
-
-        // เพิ่มฟังก์ชันให้ปุ่ม 🗑️ เพื่อลบงาน
-        const deleteBtn = li.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', () => {
-            li.remove();
-        });
-
-        todoListIncomplete.appendChild(li);  // เพิ่มงานไปยังรายการ incomplete
-    }
-
-    // ฟังก์ชันย้ายงานไปยังรายการ complete
-    function moveToComplete(taskItem) {
-        taskItem.querySelector('.complete-btn').remove();  // ลบปุ่ม ✔️ หลังย้ายงาน
-        taskItem.querySelector('.todo-text').style.textDecoration = 'line-through';  // ขีดฆ่าข้อความ
-        todoListComplete.appendChild(taskItem);  // ย้ายงานไปยังรายการ complete
-    }
-
-    // ฟังก์ชันสำหรับสลับแท็บ
-    tabIncomplete.addEventListener('click', () => {
-        tabIncomplete.classList.add('active');
-        tabComplete.classList.remove('active');
-        todoListIncomplete.style.display = 'block';  // แสดงรายการ incomplete
-        todoListComplete.style.display = 'none';  // ซ่อนรายการ complete
+    document.getElementById('create-todo').addEventListener('click', () => {
+        const taskName = todoInput.value.trim();
+        if (taskName) {
+            todos.push({ name: taskName, category: currentCategory, status: 'incomplete' });
+            renderTodos();
+            todoInput.value = '';
+        }
     });
 
-    tabComplete.addEventListener('click', () => {
-        tabComplete.classList.add('active');
-        tabIncomplete.classList.remove('active');
-        todoListComplete.style.display = 'block';  // แสดงรายการ complete
-        todoListIncomplete.style.display = 'none';  // ซ่อนรายการ incomplete
-    });
+    function renderCategories() {
+        categoryList.innerHTML = '';
+        categories.forEach((category, index) => {
+            const li = document.createElement('li');
+            li.classList.add('category-item');
+            li.innerHTML = `
+                ${category} 
+                <span class="category-actions">
+                    <button onclick="selectCategory('${category}')">เลือก / Select</button>
+                    <button onclick="deleteCategory(${index})">ลบ / Delete</button>
+                </span>
+            `;
+            categoryList.appendChild(li);
+        });
+    }
 
+    function renderTodos() {
+        todoList.innerHTML = '';
+        const filteredTodos = todos.filter(todo => todo.category === currentCategory || currentCategory === 'ทั้งหมด / All');
+        filteredTodos.forEach((todo, index) => {
+            const li = document.createElement('li');
+            li.classList.add('todo-item');
+            li.innerHTML = `
+                ${todo.name} - ${todo.status === 'complete' ? 'สำเร็จแล้ว / Completed' : 'ยังไม่สำเร็จ / Incomplete'}
+                <span class="todo-actions">
+                    <button onclick="toggleStatus(${index})">เปลี่ยนสถานะ / Toggle Status</button>
+                    <button onclick="deleteTodo(${index})">ลบ / Delete</button>
+                </span>
+            `;
+            todoList.appendChild(li);
+        });
+    }
+
+    function selectCategory(category) {
+        currentCategory = category;
+        currentCategoryDisplay.textContent = category;
+        renderTodos();
+    }
+
+    function deleteCategory(index) {
+        categories.splice(index, 1);
+        renderCategories();
+        currentCategory = 'ทั้งหมด / All';
+        currentCategoryDisplay.textContent = 'ทั้งหมด / All';
+        renderTodos();
+    }
+
+    function toggleStatus(index) {
+        todos[index].status = todos[index].status === 'complete' ? 'incomplete' : 'complete';
+        renderTodos();
+    }
+
+    function deleteTodo(index) {
+        todos.splice(index, 1);
+        renderTodos();
+    }
 </script>
 
 </body>
